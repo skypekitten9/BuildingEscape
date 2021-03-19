@@ -19,11 +19,9 @@ UWorldPosition::UWorldPosition()
 void UWorldPosition::BeginPlay()
 {
 	Super::BeginPlay();
-	FString Log = GetOwner()->GetName();
-
-	FString* LogPtr = &Log;
-	UE_LOG(LogTemp, Warning, TEXT("%s"), **LogPtr);
-	
+	//Own logic
+	FString ObjPostition = GetOwner()->GetTransform().GetLocation().ToString();
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *ObjPostition);
 }
 
 
