@@ -3,6 +3,9 @@
 
 #include "OpenDoor.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/PlayerController.h"
+#include "Engine/World.h"
+
 
 // Sets default values for this component's properties
 UOpenDoor::UOpenDoor()
@@ -19,8 +22,14 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
-	TargetYaw += GetOwner()->GetActorRotation().Yaw;
+	
 	// ...
+	InitialYaw = GetOwner()->GetActorRotation().Yaw;
+	TargetYaw += InitialYaw;
+
+	//Error-handling
+	if (!PreasurePlate) UE_LOG(LogTemp, Error, TEXT("Actor %s has the OpenDoor componant but is missing a Preasure Plate."), *GetOwner()->GetName());
+	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 
@@ -30,12 +39,31 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+	if (PreasurePlate && PreasurePlate->IsOverlappingActor(ActorThatOpens))
+	{
+		OpenDoor(DeltaTime);
+		TimerStartClock = GetWorld()->GetTimeSeconds();
+	}
+	else
+	{
+		if (GetWorld()->GetTimeSeconds() - TimerStartClock > DoorOpenDelay) CloseDoor(DeltaTime);
+	}
+}
+
+void UOpenDoor::OpenDoor(float DeltaTime)
+{
 	CurrentYaw = GetOwner()->GetActorRotation().Yaw;
 	FRotator ToRotate(0.f, 0.f, 0.f);
-
 	//ToRotate.Yaw = FMath::FInterpConstantTo(InitialYaw, TargetYaw, DeltaTime, 45.f);
 	ToRotate.Yaw = FMath::FInterpTo(CurrentYaw, TargetYaw, DeltaTime, 2);
 	GetOwner()->SetActorRotation(ToRotate);
-	UE_LOG(LogTemp, Warning, TEXT("The yaw value is: %f"), GetOwner()->GetActorRotation().Yaw);
+}
+
+void UOpenDoor::CloseDoor(float DeltaTime)
+{
+	CurrentYaw = GetOwner()->GetActorRotation().Yaw;
+	FRotator ToRotate(0.f, 0.f, 0.f);
+	ToRotate.Yaw = FMath::FInterpTo(CurrentYaw, InitialYaw, DeltaTime, 2);
+	GetOwner()->SetActorRotation(ToRotate);
 }
 
