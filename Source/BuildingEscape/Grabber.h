@@ -26,6 +26,7 @@ public:
 private:
 	FVector PlayerViewPos;
 	FRotator PlayerViewRotator;
+	UPROPERTY(EditAnywhere) float Reach = 100.f;
 
 		
 };
