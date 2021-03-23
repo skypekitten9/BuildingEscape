@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Components/InputComponent.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
@@ -25,8 +26,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 private:
+	void Grab();
+	void Release();
 	FVector PlayerViewPos;
 	FRotator PlayerViewRotator;
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
+	UInputComponent* InputComponent = nullptr;
 	UPROPERTY(EditAnywhere) float Reach = 100.f;
 };
