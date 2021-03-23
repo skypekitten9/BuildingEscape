@@ -1,10 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Grabber.h"
+
 #include "DrawDebugHelpers.h"
+#include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 
 #define OUT
+#define NULLPROTECT
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -31,24 +34,33 @@ void UGrabber::BeginPlay()
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPos, 
-		OUT PlayerViewRotator
-	);
-	FVector TargetPos = PlayerViewPos + PlayerViewRotator.Vector() * Reach;
-
-	DrawDebugLine(
-		GetWorld(),
-		PlayerViewPos,
-		TargetPos,
-		FColor(0.f, 255.f, 0.f),
-		false,
-		0.f,
-		0,
-		3
-	);
+    // ...
+    //Raycast
+    GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+        OUT PlayerViewPos,
+        OUT PlayerViewRotator
+    );
+    FVector TargetPos = PlayerViewPos + PlayerViewRotator.Vector() * Reach;
+    DrawDebugLine(
+        GetWorld(),
+        PlayerViewPos,
+        TargetPos,
+        FColor(0.f, 255.f, 0.f),
+        false,
+        0.f,
+        0,
+        3
+    );
+    FHitResult Hit;
+    GetWorld()->LineTraceSingleByObjectType(
+        Hit,
+        PlayerViewPos,
+        TargetPos,
+        FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+        FCollisionQueryParams(TEXT(""), false, GetOwner())
+    );
+    if (NULLPROTECT Hit.GetActor()) UE_LOG(LogTemp, Warning, TEXT("Actor %s was hit with raycast!"), *Hit.GetActor()->GetName())
 }
 
