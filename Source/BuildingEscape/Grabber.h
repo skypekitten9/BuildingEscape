@@ -27,6 +27,6 @@ public:
 private:
 	FVector PlayerViewPos;
 	FRotator PlayerViewRotator;
-	
+	UPhysicsHandleComponent* PhysicsHandle = nullptr;
 	UPROPERTY(EditAnywhere) float Reach = 100.f;
 };

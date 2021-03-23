@@ -26,7 +26,15 @@ void UGrabber::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	UE_LOG(LogTemp, Warning, TEXT("Grabber ready for duty!"));
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (NULLPROTECT PhysicsHandle)
+	{
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Actor '%s' is missing a 'UphysicsHandleComponent'."), *(GetOwner()->GetName()));
+	}
 	
 }
 
