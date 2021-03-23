@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Grabber.h"
 
 #include "DrawDebugHelpers.h"
@@ -15,8 +14,6 @@ UGrabber::UGrabber()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -25,8 +22,13 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-    //Get components
+    //Setup
+    SetupPhysicsHandle();
+    SetupInputComponent();
+}
+
+void UGrabber::SetupPhysicsHandle()
+{
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
     if (NULLPROTECT PhysicsHandle)
     {
@@ -36,7 +38,10 @@ void UGrabber::BeginPlay()
     {
         UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UphysicsHandleComponent'."), *(GetOwner()->GetName()));
     }
+}
 
+void UGrabber::SetupInputComponent()
+{
     InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
     if (NULLPROTECT InputComponent)
     {
@@ -47,7 +52,7 @@ void UGrabber::BeginPlay()
         UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UInputComponent'."), *(GetOwner()->GetName()));
     }
 
-	//Input
+	//Binding
 	InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 	InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 }
@@ -57,24 +62,16 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
 
-    // ...
+AActor* UGrabber::GetActorToGrab()
+{
     //Raycast
     GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
         OUT PlayerViewPos,
         OUT PlayerViewRotator
     );
     FVector TargetPos = PlayerViewPos + PlayerViewRotator.Vector() * Reach;
-    DrawDebugLine(
-        GetWorld(),
-        PlayerViewPos,
-        TargetPos,
-        FColor(0.f, 255.f, 0.f),
-        false,
-        0.f,
-        0,
-        3
-    );
     FHitResult Hit;
     GetWorld()->LineTraceSingleByObjectType(
         Hit,
@@ -83,11 +80,13 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
         FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
         FCollisionQueryParams(TEXT(""), false, GetOwner())
     );
-    if (NULLPROTECT Hit.GetActor()) UE_LOG(LogTemp, Warning, TEXT("Actor %s was hit with raycast!"), *Hit.GetActor()->GetName());
+    return Hit.GetActor();
 }
 
 void UGrabber::Grab()
 {
+    AActor* ActorToGrab = GetActorToGrab();
+    if (ActorToGrab) UE_LOG(LogTemp, Warning, TEXT("Actor %s grabbed!"), *ActorToGrab->GetName());
     UE_LOG(LogTemp, Warning, TEXT("Grabed."));
 }
 
