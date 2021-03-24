@@ -28,11 +28,11 @@ public:
 private:
 	void SetupPhysicsHandle();
 	void SetupInputComponent();
-	AActor* GetActorToGrab();
+	FHitResult GetActorWithinReach();
+	FVector GetTargetPos();
+	FVector GetPlayerViewPos();
 	void Grab();
 	void Release();
-	FVector PlayerViewPos;
-	FRotator PlayerViewRotator;
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
 	UInputComponent* InputComponent = nullptr;
 	UPROPERTY(EditAnywhere) float Reach = 100.f;

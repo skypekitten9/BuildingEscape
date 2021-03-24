@@ -62,35 +62,58 @@ void UGrabber::SetupInputComponent()
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    PhysicsHandle->SetTargetLocation(GetTargetPos());
 }
 
-AActor* UGrabber::GetActorToGrab()
+FHitResult UGrabber::GetActorWithinReach()
 {
     //Raycast
-    GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-        OUT PlayerViewPos,
-        OUT PlayerViewRotator
-    );
-    FVector TargetPos = PlayerViewPos + PlayerViewRotator.Vector() * Reach;
     FHitResult Hit;
     GetWorld()->LineTraceSingleByObjectType(
         Hit,
-        PlayerViewPos,
-        TargetPos,
+        GetPlayerViewPos(),
+        GetTargetPos(),
         FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
         FCollisionQueryParams(TEXT(""), false, GetOwner())
     );
-    return Hit.GetActor();
+    return Hit;
+}
+
+FVector UGrabber::GetTargetPos()
+{
+    FVector PlayerViewPos;
+    FRotator PlayerViewRotator;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPos,
+		OUT PlayerViewRotator
+	);
+	return PlayerViewPos + PlayerViewRotator.Vector() * Reach;
+}
+
+FVector UGrabber::GetPlayerViewPos()
+{
+    FVector result;
+    FRotator temp;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT result,
+        OUT temp
+	);
+    return result;
 }
 
 void UGrabber::Grab()
 {
-    AActor* ActorToGrab = GetActorToGrab();
-    if (ActorToGrab) UE_LOG(LogTemp, Warning, TEXT("Actor %s grabbed!"), *ActorToGrab->GetName());
-    UE_LOG(LogTemp, Warning, TEXT("Grabed."));
+    FHitResult Hit = GetActorWithinReach();
+    if (Hit.GetActor())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Grabbed!"));
+        PhysicsHandle->GrabComponent(Hit.GetComponent(), NAME_None, GetTargetPos(), false);
+    }
 }
 
 void UGrabber::Release()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Released."));
+	UE_LOG(LogTemp, Warning, TEXT("Released!"));
+    PhysicsHandle->ReleaseComponent();
 }
