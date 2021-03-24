@@ -4,7 +4,10 @@
 #include "OpenDoor.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
+
+#define OUT
 
 
 // Sets default values for this component's properties
@@ -39,7 +42,7 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	if (PreasurePlate && PreasurePlate->IsOverlappingActor(ActorThatOpens))
+	if (PreasurePlate && GetTotalMassOfActors() > MassThreshold)
 	{
 		OpenDoor(DeltaTime);
 		TimerStartClock = GetWorld()->GetTimeSeconds();
@@ -65,5 +68,18 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 	FRotator ToRotate(0.f, 0.f, 0.f);
 	ToRotate.Yaw = FMath::FInterpTo(CurrentYaw, InitialYaw, DeltaTime, 2);
 	GetOwner()->SetActorRotation(ToRotate);
+}
+
+float UOpenDoor::GetTotalMassOfActors()
+{
+	float TotalMass = 0.f;
+	TArray<AActor*> ActorsList;
+	PreasurePlate->GetOverlappingActors(OUT ActorsList);
+	for (int32 i = 0; i < ActorsList.Num(); i++)
+	{
+		TotalMass += ActorsList[i]->FindComponentByClass<UPrimitiveComponent>()->CalculateMass();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Total weight is %f of a total of %i actors."), TotalMass, ActorsList.Num());
+	return TotalMass;
 }
 

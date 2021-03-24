@@ -28,9 +28,11 @@ public:
 private:
 	void OpenDoor(float DeltaTime);
 	void CloseDoor(float DeltaTime);
+	float GetTotalMassOfActors();
 	float CurrentYaw = 0.f, InitialYaw = 0.f, TimerStartClock = 0.f;
 	AActor* ActorThatOpens;
 	UPROPERTY(EditAnywhere) float TargetYaw = 90.f;
 	UPROPERTY(EditAnywhere) float DoorOpenDelay = 1.f;
+	UPROPERTY(EditAnywhere) float MassThreshold = 10.f;
 	UPROPERTY(EditAnywhere) ATriggerVolume* PreasurePlate;
 };

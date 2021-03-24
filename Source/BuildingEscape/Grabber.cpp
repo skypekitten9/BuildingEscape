@@ -8,25 +8,7 @@
 #define OUT
 #define NULLPROTECT
 
-// Sets default values for this component's properties
-UGrabber::UGrabber()
-{
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-}
-
-
-// Called when the game starts
-void UGrabber::BeginPlay()
-{
-	Super::BeginPlay();
-
-    //Setup
-    SetupPhysicsHandle();
-    SetupInputComponent();
-}
-
+#pragma region Setup
 void UGrabber::SetupPhysicsHandle()
 {
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
@@ -56,7 +38,20 @@ void UGrabber::SetupInputComponent()
 	InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 	InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 }
+#pragma endregion Setup
 
+#pragma region Unreal Methods
+UGrabber::UGrabber()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
+void UGrabber::BeginPlay()
+{
+	Super::BeginPlay();
+    SetupPhysicsHandle();
+    SetupInputComponent();
+}
 
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -65,7 +60,26 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
     PhysicsHandle->SetTargetLocation(GetTargetPos());
 }
+#pragma endregion Unreal Methods
 
+
+void UGrabber::Grab()
+{
+    FHitResult Hit = GetActorWithinReach();
+    if (Hit.GetActor())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Grabbed!"));
+        PhysicsHandle->GrabComponent(Hit.GetComponent(), NAME_None, GetTargetPos(), false);
+    }
+}
+
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Released!"));
+    PhysicsHandle->ReleaseComponent();
+}
+
+#pragma region Get/Set
 FHitResult UGrabber::GetActorWithinReach()
 {
     //Raycast
@@ -79,6 +93,7 @@ FHitResult UGrabber::GetActorWithinReach()
     );
     return Hit;
 }
+
 
 FVector UGrabber::GetTargetPos()
 {
@@ -101,19 +116,4 @@ FVector UGrabber::GetPlayerViewPos()
 	);
     return result;
 }
-
-void UGrabber::Grab()
-{
-    FHitResult Hit = GetActorWithinReach();
-    if (Hit.GetActor())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Grabbed!"));
-        PhysicsHandle->GrabComponent(Hit.GetComponent(), NAME_None, GetTargetPos(), false);
-    }
-}
-
-void UGrabber::Release()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Released!"));
-    PhysicsHandle->ReleaseComponent();
-}
+#pragma endregion Get/Set
