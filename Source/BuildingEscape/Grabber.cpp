@@ -6,32 +6,24 @@
 #include "GameFramework/PlayerController.h"
 
 #define OUT
-#define NULLPROTECT
+#define NULLGUARD
 
 #pragma region Setup
 void UGrabber::SetupPhysicsHandle()
 {
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-    if (NULLPROTECT PhysicsHandle)
+    if (NULLGUARD !PhysicsHandle)
     {
-        UE_LOG(LogTemp, Display, TEXT("Actor '%s' found 'UPhysicsHandleComponent'."), *(GetOwner()->GetName()))
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UphysicsHandleComponent'."), *(GetOwner()->GetName()));
+		UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UphysicsHandleComponent'."), *(GetOwner()->GetName()));
     }
 }
 
 void UGrabber::SetupInputComponent()
 {
     InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
-    if (NULLPROTECT InputComponent)
+    if (NULLGUARD !InputComponent)
     {
-        UE_LOG(LogTemp, Display, TEXT("Actor '%s' found 'UInputComponent'."), *(GetOwner()->GetName()));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UInputComponent'."), *(GetOwner()->GetName()));
+		UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UInputComponent'."), *(GetOwner()->GetName()));
     }
 
 	//Binding
@@ -57,7 +49,7 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	if (NULLGUARD !PhysicsHandle) UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UphysicsHandleComponent'."), *(GetOwner()->GetName()));
     PhysicsHandle->SetTargetLocation(GetTargetPos());
 }
 #pragma endregion Unreal Methods
@@ -66,16 +58,17 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 void UGrabber::Grab()
 {
     FHitResult Hit = GetActorWithinReach();
-    if (Hit.GetActor())
+    if (NULLGUARD Hit.GetActor())
     {
-        UE_LOG(LogTemp, Warning, TEXT("Grabbed!"));
-        PhysicsHandle->GrabComponent(Hit.GetComponent(), NAME_None, GetTargetPos(), false);
+		if (NULLGUARD !PhysicsHandle) UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UphysicsHandleComponent'."), *(GetOwner()->GetName()));
+		PhysicsHandle->GrabComponent(Hit.GetComponent(), NAME_None, GetTargetPos(), false);
     }
 }
 
 void UGrabber::Release()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Released!"));
+	if (NULLGUARD !PhysicsHandle) UE_LOG(LogTemp, Error, TEXT("Actor '%s' is MISSING component 'UphysicsHandleComponent'."), *(GetOwner()->GetName()));
     PhysicsHandle->ReleaseComponent();
 }
 
